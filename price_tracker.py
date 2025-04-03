@@ -5,6 +5,10 @@ import os
 from datetime import datetime
 import matplotlib.pyplot as plt
 
+import matplotlib.pyplot as plt
+plt.rcParams['font.family'] = 'DejaVu Sans'  # 한글 깨짐 방지용 영문 폰트
+
+
 # ✅ 가격 크롤링 함수
 def get_price():
     url = "http://www.schoolmusic.co.kr/Shop/index.php3?var=Good&Good_no=64553&version=pc"
