@@ -1,25 +1,26 @@
-from flask import Flask
-import requests
-from bs4 import BeautifulSoup
-import os
+from flask import Flask, send_file, render_template_string
 
 app = Flask(__name__)
 
 @app.route("/")
-def price_check():
-    url = "https://www.usedgt.co.kr/shop/goods/goods_view.php?goodsno=123456"
-    headers = {"User-Agent": "Mozilla/5.0"}
-    res = requests.get(url, headers=headers)
-    soup = BeautifulSoup(res.text, "html.parser")
-    price_tag = soup.select_one(".item_price")
-    price = price_tag.get_text(strip=True) if price_tag else "가격을 찾을 수 없음"
-    
-    return f"""
-    <h2>🎸 가격 추적 결과</h2>
-    <p><strong>가격:</strong> {price}</p>
+def index():
+    # HTML을 문자열로 직접 작성해 간단히 보여줍니다
+    html = """
+    <html>
+        <head>
+            <title>🎸 가격 추적</title>
+        </head>
+        <body style="text-align:center; font-family:sans-serif;">
+            <h2>🎸 SchoolMusic 가격 변동 그래프</h2>
+            <img src="/graph" style="width:80%;">
+        </body>
+    </html>
     """
+    return render_template_string(html)
 
-# 🚀 Railway용 정확한 실행 코드
+@app.route("/graph")
+def graph():
+    return send_file("static/price_graph.png", mimetype="image/png")
+
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(debug=True)
