@@ -1,15 +1,20 @@
-name: 🗓️ Run Price Tracker every 10 minutes
+name: 📅 Run Price Tracker every 10 minutes
 
 on:
   schedule:
-    - cron: "*/10 * * * *"
-  workflow_dispatch:
+    - cron: "*/10 * * * *"  # 매 10분마다 실행
+  workflow_dispatch:        # 수동 실행도 가능
 
 jobs:
   run:
     runs-on: ubuntu-latest
+
     steps:
-      - name: 📥 Checkout repo
+      - name: 📂 Check file list
+        run: |
+          ls -al
+
+      - name: 🛒 Checkout repo
         uses: actions/checkout@v3
 
       - name: 🐍 Set up Python
@@ -21,10 +26,6 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: 📂 Check file list
-        run: |
-          ls -al
-
       - name: 🚀 Run price_tracker.py
         run: |
           python price_tracker.py
@@ -33,6 +34,6 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add price_log_*.csv || echo "⚠️ No new price logs"
-          git commit -m "🗓️ Update price logs [auto]" || echo "No changes"
+          git add price_log_*.csv
+          git commit -m "📊 Update price logs [auto]" || echo "No changes"
           git push
