@@ -8,13 +8,12 @@ on:
 jobs:
   run:
     runs-on: ubuntu-latest
-
     steps:
-      - name: 📂 Check file list
+      - name: 🔍 Check file list
         run: |
           ls -al
 
-      - name: 🛒 Checkout repo
+      - name: 📁 Checkout repo
         uses: actions/checkout@v3
 
       - name: 🐍 Set up Python
@@ -34,6 +33,6 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add price_log_*.csv
-          git commit -m "📊 Update price logs [auto]" || echo "No changes"
+          git add price_log_*.csv || echo "No files to add"
+          git commit -m "📈 Update price logs [auto]" || echo "No changes"
           git push
