@@ -1,3 +1,5 @@
+print("📂 현재 경로 파일 목록:", os.listdir())
+
 import csv
 import os
 import requests
