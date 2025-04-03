@@ -1,46 +1,38 @@
-- name: 📂 Check file list
-  run: |
-    ls -al
-
-
-name: 🧾 Run Price Tracker every 10 minutes
+name: 🗓️ Run Price Tracker every 10 minutes
 
 on:
   schedule:
-    - cron: "*/10 * * * *"   # 매 10분마다 실행
-  workflow_dispatch:        # 수동 실행도 가능
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
 
 jobs:
   run:
     runs-on: ubuntu-latest
-
     steps:
-    - name: 📥 Checkout repo
-      uses: actions/checkout@v3
+      - name: 📥 Checkout repo
+        uses: actions/checkout@v3
 
-    - name: 🐍 Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.10"
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
 
-    - name: 📦 Install dependencies
-      run: |
-        pip install -r requirements.txt
+      - name: 📦 Install dependencies
+        run: |
+          pip install -r requirements.txt
 
-    - name: 🚀 Run price_tracker.py
-      run: |
-        python price_tracker.py
+      - name: 📂 Check file list
+        run: |
+          ls -al
 
-    - name: 📂 Commit updated price logs
-      run: |
-        git config user.name "github-actions"
-        git config user.email "actions@github.com"
+      - name: 🚀 Run price_tracker.py
+        run: |
+          python price_tracker.py
 
-        FILES=$(ls price_log_*.csv 2>/dev/null || true)
-        if [ -n "$FILES" ]; then
-          git add $FILES
-          git commit -m "📈 Update price logs [auto]"
+      - name: 💾 Commit updated price logs
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add price_log_*.csv || echo "⚠️ No new price logs"
+          git commit -m "🗓️ Update price logs [auto]" || echo "No changes"
           git push
-        else
-          echo "⚠️ No price_log CSV files to commit."
-        fi
