@@ -80,6 +80,7 @@ def index():
     """
     return render_template_string(html, tables=all_tables)
 
+
 if __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 5000))
