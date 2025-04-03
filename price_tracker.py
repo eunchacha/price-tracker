@@ -2,7 +2,7 @@ import csv
 import os
 import requests
 from bs4 import BeautifulSoup
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # 가격 태그 선택자 (공통 사용)
 PRICE_SELECTOR = "td[valign='bottom'] font > span"
@@ -26,10 +26,8 @@ def fetch_price(url):
 
 # items.csv 읽고 각 상품별 가격 수집 후 개별 CSV 저장
 def run_all():
-    from datetime import datetime, timedelta
-
-now = (datetime.utcnow() + timedelta(hours=9)).strftime("%Y-%m-%d %H:%M")
-
+    # ✅ 한국 시간으로 현재 시간 기록
+    now = (datetime.utcnow() + timedelta(hours=9)).strftime("%Y-%m-%d %H:%M")
 
     with open("items.csv", encoding="utf-8") as f:
         reader = csv.DictReader(f)
