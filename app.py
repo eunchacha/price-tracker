@@ -49,7 +49,7 @@ def index():
     html = """
     <html>
     <head>
-        <title>🎸 가격 추적 테이블</title>
+        <title>🎸 DAME - 상품 가격 추적 🎸</title>
         <style>
             body { font-family: sans-serif; text-align: center; }
             table { margin: 20px auto; border-collapse: collapse; }
