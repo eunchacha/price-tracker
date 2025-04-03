@@ -1,88 +1,48 @@
-import requests
-from bs4 import BeautifulSoup
 import csv
 import os
+import requests
+from bs4 import BeautifulSoup
 from datetime import datetime
-import matplotlib.pyplot as plt
 
-import matplotlib.pyplot as plt
-plt.rcParams['font.family'] = 'DejaVu Sans'  # 한글 깨짐 방지용 영문 폰트
+# 가격 태그 선택자 (공통 사용)
+PRICE_SELECTOR = "td[valign='bottom'] font > span"
 
+# 상품명에 따라 파일 이름을 안전하게 만들기
+def clean_filename(name):
+    return "_".join(name.split()).replace("/", "_").replace("(", "").replace(")", "")
 
-# ✅ 가격 크롤링 함수
-def get_price():
-    url = "http://www.schoolmusic.co.kr/Shop/index.php3?var=Good&Good_no=64553&version=pc"
-    headers = {
-        "User-Agent": "Mozilla/5.0"
-    }
-    res = requests.get(url, headers=headers)
-    soup = BeautifulSoup(res.text, "html.parser")
-
-    # 💡 정확한 selector
-    price_tag = soup.select_one("td[valign='bottom'] font > span")
-    if price_tag:
-        price = price_tag.get_text(strip=True)
-        return price
-    else:
-        return None
-
-# ✅ 가격 저장 함수 (CSV)
-def save_price(price):
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    with open("price_log.csv", "a", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerow([now, price])
-
-# ✅ 가격 변동 그래프 생성 함수
-def generate_graph():
-    times = []
-    prices = []
-
+# 가격 수집 함수
+def fetch_price(url):
+    headers = {"User-Agent": "Mozilla/5.0"}
     try:
-        with open("price_log.csv", newline="", encoding="utf-8") as f:
-            reader = csv.reader(f)
-            for row in reader:
-                try:
-                    time_str = row[0]
-                    price_str = row[1]
-                    if not price_str.strip():
-                        continue
-                    times.append(datetime.strptime(time_str, "%Y-%m-%d %H:%M:%S"))
-                    prices.append(int(price_str.replace(",", "").strip()))
-                except:
-                    continue
-    except FileNotFoundError:
-        print("⚠️ price_log.csv 파일이 없습니다.")
-        return
+        res = requests.get(url, headers=headers, timeout=10)
+        soup = BeautifulSoup(res.text, "html.parser")
+        price_tag = soup.select_one(PRICE_SELECTOR)
+        if price_tag:
+            return price_tag.get_text(strip=True)
+    except Exception as e:
+        print("[에러] 가격 수집 실패:", e)
+    return None
 
-    if not prices:
-        print("⚠️ 유효한 가격 데이터가 없어 그래프를 그릴 수 없습니다.")
-        return
+# items.csv 읽고 각 상품별 가격 수집 후 개별 CSV 저장
+def run_all():
+    now = datetime.now().strftime("%Y-%m-%d %H:%M")
 
-    os.makedirs("static", exist_ok=True)
+    with open("items.csv", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            name = row["상품명"].strip()
+            url = row["URL"].strip()
+            price = fetch_price(url)
 
-    plt.figure(figsize=(10, 4))
-    plt.plot(times, prices, marker="o", linestyle="-", color="blue")
+            if price:
+                filename = f"price_log_{clean_filename(name)}.csv"
+                with open(filename, "a", newline="", encoding="utf-8") as out:
+                    writer = csv.writer(out)
+                    writer.writerow([now, price])
+                print(f"✅ {name}: {price} 저장됨 → {filename}")
+            else:
+                print(f"❌ {name}: 가격 수집 실패")
 
-    # ✅ 가격 숫자 표시
-    for t, p in zip(times, prices):
-        plt.text(t, p, f"{p:,}", ha='center', va='bottom', fontsize=9, color='black')
-
-    plt.title("🎸 SchoolMusic 가격 변동 그래프")
-    plt.xlabel("시간")
-    plt.ylabel("가격 (원)")
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    plt.grid(True)
-    plt.savefig("static/price_graph.png")
-    print("✅ 그래프가 static/price_graph.png 에 저장되었습니다.")
-
-# ✅ 메인 실행
 if __name__ == "__main__":
-    price = get_price()
-    if price:
-        save_price(price)
-        print(f"[{datetime.now()}] 가격 저장됨: {price}")
-        generate_graph()
-    else:
-        print("❌ 가격을 찾을 수 없음")
+    run_all()
