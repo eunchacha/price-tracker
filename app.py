@@ -59,7 +59,7 @@ def index():
         </style>
     </head>
     <body>
-        <h1>🎸 여러 상품 가격 추적</h1>
+        <h1>🎸 DAME - 스쿨뮤직 상품 가격 추주추주추추적 🎸</h1>
         {% for name, table in tables.items() %}
             <h2>{{ name }}</h2>
             <table>
