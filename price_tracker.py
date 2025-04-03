@@ -1,10 +1,10 @@
-print("📂 현재 경로 파일 목록:", os.listdir())
-
 import csv
 import os
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
+
+print("📂 현재 경로 파일 목록:", os.listdir())
 
 # 가격 태그 선택자 (공통 사용)
 PRICE_SELECTOR = "td[valign='bottom'] font > span"
