@@ -1,11 +1,21 @@
 from flask import Flask, render_template_string
 import csv
 import os
+import subprocess
+import threading
+import time
 from collections import defaultdict
 
 app = Flask(__name__)
 
-# 상품별 가격 로그를 읽어서 딕셔너리로 반환
+# ✅ price_tracker.py 자동 실행 함수
+def run_price_tracker_every_10min():
+    while True:
+        print("⏱ price_tracker.py 실행 중...")
+        subprocess.run(["python", "price_tracker.py"])
+        time.sleep(600)  # 600초 = 10분
+
+# ✅ 가격 로그 읽기
 def load_price_logs():
     tables = {}
     for filename in os.listdir("."):
@@ -20,8 +30,8 @@ def load_price_logs():
                     if len(row) < 2:
                         continue
                     timestamp, price = row
-                    date, time = timestamp.split(" ")
-                    hour = time[:2] + ":00"
+                    date, time_str = timestamp.split(" ")
+                    hour = time_str[:2] + ":00"
                     data[date][hour] = price
                     hours.add(hour)
 
@@ -31,6 +41,7 @@ def load_price_logs():
             }
     return tables
 
+# ✅ 메인 페이지
 @app.route("/")
 def index():
     all_tables = load_price_logs()
@@ -80,8 +91,11 @@ def index():
     """
     return render_template_string(html, tables=all_tables)
 
-
+# ✅ 서버 실행 + 자동 수집
 if __name__ == "__main__":
-    import os
     port = int(os.environ.get("PORT", 5000))
+
+    # 🔄 10분마다 price_tracker.py 실행 쓰레드
+    threading.Thread(target=run_price_tracker_every_10min, daemon=True).start()
+
     app.run(host="0.0.0.0", port=port)
