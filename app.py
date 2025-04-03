@@ -1,7 +1,7 @@
 from flask import Flask
 import requests
 from bs4 import BeautifulSoup
-import os  # 여기로 옮기기!
+import os
 
 app = Flask(__name__)
 
@@ -19,7 +19,7 @@ def price_check():
     <p><strong>가격:</strong> {price}</p>
     """
 
-# ✅ 이거 하나만 남기세요!
+# 🚀 Railway용 정확한 실행 코드
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
+    port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
