@@ -1,8 +1,8 @@
-name: 📈 Run Price Tracker every 10 minutes
+name: 🧾 Run Price Tracker every 10 minutes
 
 on:
   schedule:
-    - cron: "*/10 * * * *"  # 매 10분마다 실행
+    - cron: "*/10 * * * *"   # 매 10분마다 실행
   workflow_dispatch:        # 수동 실행도 가능
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
       with:
         python-version: "3.10"
 
-    - name: 🔧 Install dependencies
+    - name: 📦 Install dependencies
       run: |
         pip install -r requirements.txt
 
@@ -26,10 +26,16 @@ jobs:
       run: |
         python price_tracker.py
 
-    - name: 💾 Commit updated price logs
+    - name: 📂 Commit updated price logs
       run: |
         git config user.name "github-actions"
         git config user.email "actions@github.com"
-        git add price_log_*.csv
-        git commit -m "🔄 Update price logs [auto]" || echo "No changes"
-        git push
+
+        FILES=$(ls price_log_*.csv 2>/dev/null || true)
+        if [ -n "$FILES" ]; then
+          git add $FILES
+          git commit -m "📈 Update price logs [auto]"
+          git push
+        else
+          echo "⚠️ No price_log CSV files to commit."
+        fi
