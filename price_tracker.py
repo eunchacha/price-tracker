@@ -11,7 +11,7 @@ def get_price():
     res = requests.get(url, headers=headers)
     soup = BeautifulSoup(res.text, "html.parser")
 
-    price_tag = soup.select_one(".price_num")  # 정확한 selector는 이후 확인!
+    price_tag = soup.select_one("font > span")  # ★ 여기 수정!
     if price_tag:
         price = price_tag.get_text(strip=True)
         return price
