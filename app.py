@@ -15,7 +15,7 @@ def index():
             <title>🎸 가격 추적</title>
         </head>
         <body style="text-align:center; font-family:sans-serif;">
-            <h2>🎸 SchoolMusic 가격 변동 그래프</h2>
+            <h2>🎸 SchoolMusic 데임 Dame PS-5 베이스기타 (TS) 가격 변동 그래프</h2>
             <img src="/graph" style="width:80%;">
         </body>
     </html>
