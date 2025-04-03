@@ -25,7 +25,7 @@ def index():
     html = """
     <html>
     <head>
-        <title>🎸 가격 추적 테이블</title>
+        <title>🎸 가격 추적 테이블 </title>
         <style>
             body { font-family: sans-serif; text-align: center; }
             table { margin: auto; border-collapse: collapse; }
