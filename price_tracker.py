@@ -4,32 +4,40 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 
-# 현재 경로 출력 (디버깅용)
 print("📂 현재 경로 파일 목록:", os.listdir())
-
-# ✅ 가격 태그 선택자 (수정됨)
-PRICE_SELECTOR = "td[valign='bottom'] span"
 
 # ✅ 상품명을 안전한 파일명으로 변환
 def clean_filename(name):
     return "_".join(name.split()).replace("/", "_").replace("(", "").replace(")", "")
 
-# ✅ 가격 수집 함수
+# ✅ 가격 수집 함수 (스타일 기반 정확 추출)
 def fetch_price(url):
     headers = {"User-Agent": "Mozilla/5.0"}
     try:
         res = requests.get(url, headers=headers, timeout=10)
+        res.raise_for_status()
         soup = BeautifulSoup(res.text, "html.parser")
-        price_tag = soup.select_one(PRICE_SELECTOR)
-        if price_tag:
-            text = price_tag.get_text(strip=True)
-            price = ''.join(filter(str.isdigit, text))  # 숫자만 추출 (예: 456000)
-            return price
+
+        td = soup.find("td", valign="bottom")
+        if not td:
+            print("❌ td[valign='bottom'] 요소 없음")
+            return None
+
+        fonts = td.find_all("font")
+        for font in fonts:
+            style = font.get("style", "")
+            if "font-size:30px" in style and "font-weight:bold" in style:
+                span = font.find("span")
+                if span:
+                    price = ''.join(filter(str.isdigit, span.get_text()))
+                    return price
+
+        print("❌ 조건에 맞는 가격 정보 없음")
     except Exception as e:
-        print("[에러] 가격 수집 실패:", e)
+        print(f"[에러] 가격 수집 실패: {e}")
     return None
 
-# ✅ 전체 상품에 대해 가격 수집 및 로그 저장
+# ✅ items.csv 읽고 상품별 가격 수집 후 로그 저장
 def run_all():
     now = (datetime.utcnow() + timedelta(hours=9)).strftime("%Y-%m-%d %H:%M")  # 한국 시간
 
@@ -49,6 +57,5 @@ def run_all():
             else:
                 print(f"❌ {name}: 가격 수집 실패")
 
-# ✅ 직접 실행 시 호출
 if __name__ == "__main__":
     run_all()
