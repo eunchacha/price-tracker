@@ -4,34 +4,34 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 
+# 현재 경로 출력 (디버깅용)
 print("📂 현재 경로 파일 목록:", os.listdir())
 
-# ✅ 가격 태그 선택자
-PRICE_SELECTOR = "span[style*='font-size:16pt; color:#990000']"  # 수정된 가격 태그
+# ✅ 가격 태그 선택자 (수정됨)
+PRICE_SELECTOR = "td[valign='bottom'] span"
 
-# ✅ 상품명에 따라 파일 이름을 안전하게 만들기
+# ✅ 상품명을 안전한 파일명으로 변환
 def clean_filename(name):
     return "_".join(name.split()).replace("/", "_").replace("(", "").replace(")", "")
 
 # ✅ 가격 수집 함수
 def fetch_price(url):
-    headers = {
-        "User-Agent": "Mozilla/5.0"
-    }
+    headers = {"User-Agent": "Mozilla/5.0"}
     try:
         res = requests.get(url, headers=headers, timeout=10)
         soup = BeautifulSoup(res.text, "html.parser")
         price_tag = soup.select_one(PRICE_SELECTOR)
         if price_tag:
-            price = ''.join(filter(str.isdigit, price_tag.get_text()))
+            text = price_tag.get_text(strip=True)
+            price = ''.join(filter(str.isdigit, text))  # 숫자만 추출 (예: 456000)
             return price
     except Exception as e:
         print("[에러] 가격 수집 실패:", e)
     return None
 
-# ✅ items.csv 읽고 각 상품별 가격 수집 후 개별 CSV 저장
+# ✅ 전체 상품에 대해 가격 수집 및 로그 저장
 def run_all():
-    now = (datetime.utcnow() + timedelta(hours=9)).strftime("%Y-%m-%d %H:%M")
+    now = (datetime.utcnow() + timedelta(hours=9)).strftime("%Y-%m-%d %H:%M")  # 한국 시간
 
     with open("items.csv", encoding="utf-8") as f:
         reader = csv.DictReader(f)
@@ -49,5 +49,6 @@ def run_all():
             else:
                 print(f"❌ {name}: 가격 수집 실패")
 
+# ✅ 직접 실행 시 호출
 if __name__ == "__main__":
     run_all()
