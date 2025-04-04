@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 print("📂 현재 경로 파일 목록:", os.listdir())
 
 # ✅ 가격 태그 선택자
-PRICE_SELECTOR = "td[valign='bottom'] font > span.price"
+PRICE_SELECTOR = "span[style*='font-size:16pt; color:#990000']"  # 수정된 가격 태그
 
 # ✅ 상품명에 따라 파일 이름을 안전하게 만들기
 def clean_filename(name):
@@ -16,14 +16,13 @@ def clean_filename(name):
 # ✅ 가격 수집 함수
 def fetch_price(url):
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        "User-Agent": "Mozilla/5.0"
     }
     try:
         res = requests.get(url, headers=headers, timeout=10)
         soup = BeautifulSoup(res.text, "html.parser")
         price_tag = soup.select_one(PRICE_SELECTOR)
         if price_tag:
-            # 숫자만 추출 (ex. ₩456,000 → 456000)
             price = ''.join(filter(str.isdigit, price_tag.get_text()))
             return price
     except Exception as e:
