@@ -4,43 +4,48 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 
-# ✅ 현재 경로 파일 확인용 (GitHub Actions 로그에 출력됨)
 print("📂 현재 경로 파일 목록:", os.listdir())
 
-# ✅ 가격 태그 선택자
-PRICE_SELECTOR = "td[valign='bottom'] font[style*='font-size:30px'] > span"
+# 가격 태그 선택자
+PRICE_SELECTOR = "td[valign='bottom'] font > span"
 
-# ✅ User-Agent 포함 고급 헤더 (403 방지용)
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                  "(KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-    "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
-    "Accept-Encoding": "gzip, deflate, br",
-    "Connection": "keep-alive",
-    "Referer": "https://www.schoolmusic.co.kr/",
-    "Host": "www.schoolmusic.co.kr",
-    "Upgrade-Insecure-Requests": "1"
-}
-
-# ✅ 파일 이름을 안전하게 변경
+# 파일 이름에 사용할 수 있게 상품명 정리
 def clean_filename(name):
     return "_".join(name.split()).replace("/", "_").replace("(", "").replace(")", "")
 
-# ✅ 가격 수집 함수
+# 가격 수집 함수
 def fetch_price(url):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                      "(KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+        "Referer": "https://www.schoolmusic.co.kr/",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1"
+    }
+
     try:
-        res = requests.get(url, headers=HEADERS, timeout=10)
-        res.raise_for_status()
+        res = requests.get(url, headers=headers, timeout=10)
+        if res.status_code == 403:
+            print(f"[에러] 가격 수집 실패: 403 Forbidden for url: {url}")
+            return None
+        elif res.status_code != 200:
+            print(f"[에러] 가격 수집 실패: 상태 코드 {res.status_code} for url: {url}")
+            return None
+
         soup = BeautifulSoup(res.text, "html.parser")
         price_tag = soup.select_one(PRICE_SELECTOR)
+
         if price_tag:
             return price_tag.get_text(strip=True)
+
     except Exception as e:
-        print(f"[에러] 가격 수집 실패: {e}")
+        print("[에러] 가격 수집 실패:", e)
+    
     return None
 
-# ✅ CSV 읽고 가격 수집하여 로그 저장
+# 전체 수집 실행 함수
 def run_all():
     now = (datetime.utcnow() + timedelta(hours=9)).strftime("%Y-%m-%d %H:%M")
 
@@ -60,6 +65,5 @@ def run_all():
             else:
                 print(f"❌ {name}: 가격 수집 실패")
 
-# ✅ 실행
 if __name__ == "__main__":
     run_all()
